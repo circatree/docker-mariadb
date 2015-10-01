@@ -8,9 +8,9 @@ PASS:=$(shell pwgen -s -1 16)
 DATA_DIR:=/tmp/mariadb
 PORT:=127.0.0.1:3306
 
-RUNNING_MARIADB:=$(shell docker ps | grep mariadb | cut -f 1 -d ' ')
-ALL_MARIADB:=$(shell docker ps -a | grep mariadb | cut -f 1 -d ' ')
-DOCKER_RUN_COMMON=-name="$(NAME)" -p $(PORT):3306 -v $(DATA_DIR):/data -e USER="$(USER)" -e PASS="$(PASS)" $(DOCKER_USER)/mariadb
+RUNNING:=$(shell docker ps | grep $(NAME) | cut -f 1 -d ' ')
+ALL:=$(shell docker ps -a | grep $(NAME) | cut -f 1 -d ' ')
+DOCKER_RUN_COMMON=--name="$(NAME)" -p $(PORT):3306 -v $(DATA_DIR):/data -e USER="$(USER)" -e PASS="$(PASS)" $(DOCKER_USER)/mariadb
 
 all: build
 
@@ -23,15 +23,15 @@ run: clean
 
 bash: clean
 	mkdir -p $(DATA_DIR)
-	docker run -entrypoint="/bin/bash" -t -i $(DOCKER_RUN_COMMON)
+	docker run -t -i $(DOCKER_RUN_COMMON) /sbin/my_init -- bash -l
 
 # Removes existing containers.
 clean:
-ifneq ($(strip $(RUNNING_MARIADB)),)
-	docker stop $(RUNNING_MARIADB)
+ifneq ($(strip $(RUNNING)),)
+	docker stop $(RUNNING)
 endif
-ifneq ($(strip $(ALL_MARIADB)),)
-	docker rm $(ALL_MARIADB)
+ifneq ($(strip $(ALL)),)
+	docker rm $(ALL)
 endif
 
 # Destroys the data directory.
